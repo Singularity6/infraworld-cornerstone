@@ -247,6 +247,16 @@ public class Misc
     }
 
     /**
+     * Converts a string like com.s6.core to com_s6_core.
+     * 
+     * @return Input com.s6.core string transformed to ComS6Core.
+     */
+    public static String mixedCharacterStringToCppSafe(final String mixedCharacterString)
+    {
+        return snakeCaseToCamelCase(mixedCharacterString.replaceAll("[\\.\\-]", "_"));
+    }
+
+    /**
      * Transforms snake_case_string into camelCaseString.
      * @param snakeCaseString String in snake_case.
      *

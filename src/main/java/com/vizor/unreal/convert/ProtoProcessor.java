@@ -61,6 +61,7 @@ import static com.vizor.unreal.tree.CppRecord.Residence.Header;
 import static com.vizor.unreal.tree.CppType.Kind.Enum;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
+import static com.vizor.unreal.util.Misc.mixedCharacterStringToCppSafe;
 import static com.vizor.unreal.util.Misc.reorder;
 import static com.vizor.unreal.util.Misc.snakeCaseToCamelCase;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
@@ -86,7 +87,7 @@ class ProtoProcessorArgs
 
         this.wrapperName = removeExtension(pathToProto.toFile().getName());
 
-        this.className = snakeCaseToCamelCase(wrapperName);
+        this.className = mixedCharacterStringToCppSafe(wrapperName);
 
 //        if (parse.packageName() == null)
 //            throw new RuntimeException("package filed in proto file is required for cornerstone");
@@ -465,9 +466,9 @@ class ProtoProcessor implements Runnable
     private CppType ueNamedType(final String serviceName, final TypeElement el)
     {
         if (el instanceof MessageElement)
-            return plain("F" + serviceName + "_" + el.name(), Struct);
+            return plain("F" + mixedCharacterStringToCppSafe(serviceName) + "_" + el.name(), Struct);
         else if (el instanceof EnumElement)
-            return plain("E" + serviceName + "_" + el.name(), Enum);
+            return plain("E" + mixedCharacterStringToCppSafe(serviceName) + "_" + el.name(), Enum);
         else
             throw new RuntimeException("Unknown type: '" + el.getClass().getName() + "'");
     }

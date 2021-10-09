@@ -31,7 +31,7 @@ public final class CppNamespace extends CppRecord
 
     public CppNamespace(final String name)
     {
-        this.name = name;
+        this.name = name.replace(".", "::");
     }
 
     public void add(final CppRecord... residents)
