@@ -61,7 +61,9 @@ import static com.vizor.unreal.tree.CppRecord.Residence.Header;
 import static com.vizor.unreal.tree.CppType.Kind.Enum;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
+// s6fix @bernst - Generate C++ safe and compilable code.
 import static com.vizor.unreal.util.Misc.mixedCharacterStringToCppSafe;
+// s6fix_end
 import static com.vizor.unreal.util.Misc.reorder;
 import static com.vizor.unreal.util.Misc.snakeCaseToCamelCase;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
@@ -85,9 +87,11 @@ class ProtoProcessorArgs
         this.pathToConverted = requireNonNull(pathToConverted2);
         this.moduleName = requireNonNull(moduleName);
 
-        this.wrapperName = removeExtension(pathToProto.toFile().getName());
+        // s6fix @bernst - Generate C++ safe and compilable code. I haven't confirmed this helps anything. We probably should wrap pathToProto above to be safe as well, since that probably affects the generated file, and macro that can fail to compile.
+        this.wrapperName = mixedCharacterStringToCppSafe(removeExtension(pathToProto.toFile().getName()));
 
-        this.className = mixedCharacterStringToCppSafe(wrapperName);
+        this.className = wrapperName;
+        // s6fix_end
 
 //        if (parse.packageName() == null)
 //            throw new RuntimeException("package filed in proto file is required for cornerstone");
@@ -465,12 +469,21 @@ class ProtoProcessor implements Runnable
 
     private CppType ueNamedType(final String serviceName, final TypeElement el)
     {
+        // s6fix @bernst - Generate C++ safe and compilable code.
         if (el instanceof MessageElement)
+        {
             return plain("F" + mixedCharacterStringToCppSafe(serviceName) + "_" + el.name(), Struct);
+        }
+            
         else if (el instanceof EnumElement)
+        {
             return plain("E" + mixedCharacterStringToCppSafe(serviceName) + "_" + el.name(), Enum);
+        }
         else
+        {
             throw new RuntimeException("Unknown type: '" + el.getClass().getName() + "'");
+        }
+        // s6fix_end
     }
 
 

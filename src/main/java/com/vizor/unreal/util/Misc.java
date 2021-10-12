@@ -246,6 +246,8 @@ public class Misc
         }
     }
 
+    // s6fix @bernst - Generate C++ safe and compilable code.
+
     /**
      * Converts a string like com.s6.core to com_s6_core.
      * 
@@ -255,6 +257,7 @@ public class Misc
     {
         return snakeCaseToCamelCase(mixedCharacterString.replaceAll("[\\.\\-]", "_"));
     }
+    // s6fix_end
 
     /**
      * Transforms snake_case_string into camelCaseString.
