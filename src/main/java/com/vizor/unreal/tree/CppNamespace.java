@@ -16,6 +16,9 @@
 package com.vizor.unreal.tree;
 
 import com.vizor.unreal.writer.CppPrinter;
+// s6fix @bernst - Generate C++ safe and compilable code.
+import static com.vizor.unreal.util.Misc.packageNameToCppNamespace;
+// s6fix_end
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +34,9 @@ public final class CppNamespace extends CppRecord
 
     public CppNamespace(final String name)
     {
-        this.name = name.replace(".", "::");
+        // s6fix @bernst - Generate C++ safe and compilable code.
+        this.name = packageNameToCppNamespace(name);
+        // s6fix_end
     }
 
     public void add(final CppRecord... residents)

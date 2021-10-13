@@ -251,12 +251,23 @@ public class Misc
     /**
      * Converts a string like com.s6.core to com_s6_core.
      * 
-     * @return Input com.s6.core string transformed to ComS6Core.
+     * @return Input "com.s6.core" string transformed to "ComS6Core"
      */
     public static String mixedCharacterStringToCppSafe(final String mixedCharacterString)
     {
-        return snakeCaseToCamelCase(mixedCharacterString.replaceAll("[\\.\\-]", "_"));
+        return snakeCaseToCamelCase(mixedCharacterString.replaceAll("[.-]", "_"));
     }
+
+    /**
+     * Takes a Java package name and turns it into a C++ safe namespace.
+     *
+     * @return Input "com.s6.palia.imageservice" string transformed to "com::s6::palia::imageservice"
+     */
+    public static String packageNameToCppNamespace(final String packageName)
+    {
+        return packageName.replace(".", "::");
+    }
+
     // s6fix_end
 
     /**

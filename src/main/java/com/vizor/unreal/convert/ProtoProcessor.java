@@ -87,7 +87,7 @@ class ProtoProcessorArgs
         this.pathToConverted = requireNonNull(pathToConverted2);
         this.moduleName = requireNonNull(moduleName);
 
-        // s6fix @bernst - Generate C++ safe and compilable code. I haven't confirmed this helps anything. We probably should wrap pathToProto above to be safe as well, since that probably affects the generated file, and macro that can fail to compile.
+        // s6fix @bernst - Generate C++ safe and compilable code.
         this.wrapperName = mixedCharacterStringToCppSafe(removeExtension(pathToProto.toFile().getName()));
 
         this.className = wrapperName;
@@ -274,8 +274,10 @@ class ProtoProcessor implements Runnable
         final Config config = Config.get();
 
         // TODO: Fix paths
+        // s6fix @bernst - Generate C++ safe and compilable code.
         final String generatedIncludeName = join("/", config.getWrappersPath(),
-                removeExtension(pathToProtoStr)).replace("\\", pathSeparator);//, args.wrapperName);
+                pathToProtoStr).replace("\\", pathSeparator);//, args.wrapperName);
+        // s6fix_end
 
         final String generatedHeaderPath = getHeaderPath(args);
                 
@@ -472,12 +474,12 @@ class ProtoProcessor implements Runnable
         // s6fix @bernst - Generate C++ safe and compilable code.
         if (el instanceof MessageElement)
         {
-            return plain("F" + mixedCharacterStringToCppSafe(serviceName) + "_" + el.name(), Struct);
+            return plain("F" + serviceName + "_" + mixedCharacterStringToCppSafe(el.name()), Struct);
         }
             
         else if (el instanceof EnumElement)
         {
-            return plain("E" + mixedCharacterStringToCppSafe(serviceName) + "_" + el.name(), Enum);
+            return plain("E" + serviceName + "_" + mixedCharacterStringToCppSafe(el.name()), Enum);
         }
         else
         {

@@ -42,6 +42,9 @@ import static com.vizor.unreal.tree.CppType.Kind.Class;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
 import static com.vizor.unreal.tree.CppType.wildcardGeneric;
+// s6fix @bernst - Generate C++ safe and compilable code.
+import static com.vizor.unreal.util.Misc.packageNameToCppNamespace;
+// s6fix_end
 import static java.lang.String.join;
 import static java.lang.System.lineSeparator;
 import static java.text.MessageFormat.format;
@@ -252,7 +255,7 @@ class ClientWorkerGenerator
 
     private String getPackageNamespaceString()
     {
-        return parse.packageName() != null ? parse.packageName() + "::" : "";
+        return parse.packageName() != null ? packageNameToCppNamespace(parse.packageName()) + "::" : "";
     }
 
 }
