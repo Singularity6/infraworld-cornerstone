@@ -246,8 +246,6 @@ public class Misc
         }
     }
 
-    // s6fix @bernst - Generate C++ safe and compilable code.
-
     /**
      * Converts a string like "com.s6.core.image-service" to ComS6CoreImageService.
      * Preserves case, except to upper case first letter to a word, where words are separated by underscores.
@@ -308,8 +306,6 @@ public class Misc
     {
         return packageName.replace(".", "::");
     }
-
-    // s6fix_end
 
     /**
      * Transforms snake_case_string into camelCaseString.

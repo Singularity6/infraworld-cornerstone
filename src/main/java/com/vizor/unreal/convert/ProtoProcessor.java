@@ -61,9 +61,7 @@ import static com.vizor.unreal.tree.CppRecord.Residence.Header;
 import static com.vizor.unreal.tree.CppType.Kind.Enum;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
-// s6fix @bernst - Generate C++ safe and compilable code.
 import static com.vizor.unreal.util.Misc.mixedCharacterStringToCppSafe;
-// s6fix_end
 import static com.vizor.unreal.util.Misc.reorder;
 import static com.vizor.unreal.util.Misc.snakeCaseToCamelCase;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
@@ -87,11 +85,9 @@ class ProtoProcessorArgs
         this.pathToConverted = requireNonNull(pathToConverted2);
         this.moduleName = requireNonNull(moduleName);
 
-        // s6fix @bernst - Generate C++ safe and compilable code.
         this.wrapperName = mixedCharacterStringToCppSafe(removeExtension(pathToProto.toFile().getName()));
 
         this.className = wrapperName;
-        // s6fix_end
 
 //        if (parse.packageName() == null)
 //            throw new RuntimeException("package filed in proto file is required for cornerstone");
@@ -274,10 +270,8 @@ class ProtoProcessor implements Runnable
         final Config config = Config.get();
 
         // TODO: Fix paths
-        // s6fix @bernst - removeExtension was already called on pathToProtoStr above, calling it again can remove strings with periods intended to be in the name.
         final String generatedIncludeName = join("/", config.getWrappersPath(),
                 pathToProtoStr).replace("\\", pathSeparator);//, args.wrapperName);
-        // s6fix_end
 
         final String generatedHeaderPath = getHeaderPath(args);
                 
@@ -471,7 +465,6 @@ class ProtoProcessor implements Runnable
 
     private CppType ueNamedType(final String serviceName, final TypeElement el)
     {
-        // s6fix @bernst - Generate C++ safe and compilable code.
         if (el instanceof MessageElement)
         {
             return plain("F" + serviceName + "_" + mixedCharacterStringToCppSafe(el.name()), Struct);
@@ -485,7 +478,6 @@ class ProtoProcessor implements Runnable
         {
             throw new RuntimeException("Unknown type: '" + el.getClass().getName() + "'");
         }
-        // s6fix_end
     }
 
 
