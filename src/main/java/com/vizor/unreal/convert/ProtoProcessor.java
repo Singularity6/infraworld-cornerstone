@@ -274,7 +274,7 @@ class ProtoProcessor implements Runnable
         final Config config = Config.get();
 
         // TODO: Fix paths
-        // s6fix @bernst - Generate C++ safe and compilable code.
+        // s6fix @bernst - removeExtension was already called on pathToProtoStr above, calling it again can remove strings with periods intended to be in the name.
         final String generatedIncludeName = join("/", config.getWrappersPath(),
                 pathToProtoStr).replace("\\", pathSeparator);//, args.wrapperName);
         // s6fix_end
