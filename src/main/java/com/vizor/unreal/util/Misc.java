@@ -249,13 +249,54 @@ public class Misc
     // s6fix @bernst - Generate C++ safe and compilable code.
 
     /**
-     * Converts a string like com.s6.core to com_s6_core.
+     * Converts a string like "com.s6.core.image-service" to ComS6CoreImageService.
+     * Preserves case, except to upper case first letter to a word, where words are separated by underscores.
+     *
+     * In the future we can consider reworking the code to transform ssomething like "com.s6.core.image-service to "ComS6Core_ImageService".
      * 
-     * @return Input "com.s6.core" string transformed to "ComS6Core"
+     * @return Input "com.s6.core.image-service" to "ComS6CoreImageService"
      */
     public static String mixedCharacterStringToCppSafe(final String mixedCharacterString)
     {
-        return snakeCaseToCamelCase(mixedCharacterString.replaceAll("[.-]", "_"));
+        // Transforms input "com.s6.core.image-service" to "com_s6_core_image_service"
+        final String cppSafeString = mixedCharacterString.replaceAll("[.-]", "_");
+        
+        // Below here, transforms input "com_s6_core_image_service" to "ComS6CoreImageService"
+
+        // snakeCaseToCamelCase but modified to leave existing case alone.
+        // Some strings that come in here are mostly preformated, leave the case alone.
+        final StringBuilder sb = new StringBuilder(cppSafeString.length());
+
+        // Split our snake case string by snake separator, simultaneously excluding empty strings
+        // This is faster than more sophisticated regex.
+        final String[] split = stream(cppSafeString.split("_"))
+                .filter(i -> i.length() != 0)
+                .toArray(String[]::new);
+
+        if (split.length == 0)
+        {
+            return cppSafeString;
+        }
+
+        for (int i = 0; i < split.length; i++)
+        {
+            String s = split[i];
+            final int wordLength = s.length();
+
+            if (wordLength > 0)
+            {
+                // The first letter may be either lower or upper case, depending of 'firstLetterIsCapital' flag
+                final char firstLetter = toUpperCase(s.charAt(0));
+                sb.append(firstLetter);
+
+                if (wordLength > 1)
+                {
+                    sb.append(s.substring(1));
+                }
+            }
+        }
+
+        return sb.toString();
     }
 
     /**
