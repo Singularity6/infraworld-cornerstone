@@ -255,7 +255,9 @@ class ClientWorkerGenerator
 
     private String getPackageNamespaceString()
     {
+        // s6fix @bernst - Generate C++ safe and compilable code.
         return parse.packageName() != null ? packageNameToCppNamespace(parse.packageName()) + "::" : "";
+        // s6fix_end
     }
 
 }
