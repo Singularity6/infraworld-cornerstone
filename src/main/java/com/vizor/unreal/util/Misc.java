@@ -247,19 +247,19 @@ public class Misc
     }
 
     /**
-     * Converts a string like "com.s6.core.image-service" to ComS6CoreImageService.
+     * Converts a string like "com.org.core.service-name" to ComOrgCoreServiceName.
      * Preserves case, except to upper case first letter to a word, where words are separated by underscores.
      *
-     * In the future we can consider reworking the code to transform ssomething like "com.s6.core.image-service to "ComS6Core_ImageService".
+     * In the future we can consider reworking the code to transform ssomething like "com.org.core.service-name to "ComorgCore_ServiceName".
      * 
-     * @return Input "com.s6.core.image-service" to "ComS6CoreImageService"
+     * @return Input "com.org.core.service-name" to "ComOrgCoreServiceName"
      */
     public static String mixedCharacterStringToCppSafe(final String mixedCharacterString)
     {
-        // Transforms input "com.s6.core.image-service" to "com_s6_core_image_service"
+        // Transforms input "com.org.core.service-name" to "com_org_core_Service_Name"
         final String cppSafeString = mixedCharacterString.replaceAll("[.-]", "_");
         
-        // Below here, transforms input "com_s6_core_image_service" to "ComS6CoreImageService"
+        // Below here, transforms input "com_org_core_Service_Name" to "ComOrgCoreServiceName"
 
         // snakeCaseToCamelCase but modified to leave existing case alone.
         // Some strings that come in here are mostly preformated, leave the case alone.
@@ -300,7 +300,7 @@ public class Misc
     /**
      * Takes a Java package name and turns it into a C++ safe namespace.
      *
-     * @return Input "com.s6.palia.imageservice" string transformed to "com::s6::palia::imageservice"
+     * @return Input "com.org.project.servicename" string transformed to "com::org::project::servicename"
      */
     public static String packageNameToCppNamespace(final String packageName)
     {
