@@ -250,16 +250,16 @@ public class Misc
      * Converts a string like "com.org.core.service-name" to ComOrgCoreServiceName.
      * Preserves case, except to upper case first letter to a word, where words are separated by underscores.
      *
-     * In the future we can consider reworking the code to transform ssomething like "com.org.core.service-name to "ComorgCore_ServiceName".
+     * In the future we can consider reworking the code to transform ssomething like "com.org.core.service-name to "ComOrgCore_ServiceName".
      * 
      * @return Input "com.org.core.service-name" to "ComOrgCoreServiceName"
      */
     public static String mixedCharacterStringToCppSafe(final String mixedCharacterString)
     {
-        // Transforms input "com.org.core.service-name" to "com_org_core_Service_Name"
+        // Transforms input "com.org.core.service-name" to "com_org_core_service_name"
         final String cppSafeString = mixedCharacterString.replaceAll("[.-]", "_");
         
-        // Below here, transforms input "com_org_core_Service_Name" to "ComOrgCoreServiceName"
+        // Below here, transforms input "com_org_core_service_name" to "ComOrgCoreServiceName"
 
         // snakeCaseToCamelCase but modified to leave existing case alone.
         // Some strings that come in here are mostly preformated, leave the case alone.
