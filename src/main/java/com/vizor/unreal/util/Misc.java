@@ -247,9 +247,10 @@ public class Misc
     }
 
     /**
-     * Converts an "unsafe" name string like "com.org.core.service-name" to "ComOrgCoreServiceName". Unsafe in this case means a string that can't be compiled to a generated code field name, or what have you.
+     * Converts an "unsafe" name string like "com.org.core.service-name" to "ComOrgCoreServiceName". Unsafe in this case means a string that can't be compiled to a generated code field name, or what have you. 
      * 
-     * @return Input "com.org.core.service-name" to "com_org_core_service_name"
+     * 
+     * @return Input "com.org.core.service-name" to "com_org_core_service_name". Preserves case, not strict snake case; ComOrg.ServiceName to ComOrg_ServiceName.
      */
     public static String unsafeNameToSnakeCase(final String unsafeName)
     {
