@@ -268,17 +268,6 @@ public class Misc
     }
 
     /**
-     * Transforms snake_case_string into camelCaseString.
-     * @param snakeCaseString String in snake_case.
-     *
-     * @return Input snake_case string transformed to camelCase.
-     */
-    public static String snakeCaseToCamelCase(final String snakeCaseString)
-    {
-        return snakeCaseToCamelCase(snakeCaseString, true);
-    }
-
-    /**
      * Transforms snake_case to PascalString.
      * @param pascalCaseString String in mixed case snake_case
      *
@@ -311,6 +300,17 @@ public class Misc
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Transforms snake_case_string into camelCaseString.
+     * @param snakeCaseString String in snake_case.
+     *
+     * @return Input snake_case string transformed to camelCase.
+     */
+    public static String snakeCaseToCamelCase(final String snakeCaseString)
+    {
+        return snakeCaseToCamelCase(snakeCaseString, true);
     }
 
     /**
