@@ -467,12 +467,12 @@ class ProtoProcessor implements Runnable
     {
         if (el instanceof MessageElement)
         {
-            return plain("F" + serviceName + "_" + mixedCaseSnakeCaseToPascalCase(el.name()), Struct);
+            return plain("F" + serviceName + "_" + el.name(), Struct);
         }
             
         else if (el instanceof EnumElement)
         {
-            return plain("E" + serviceName + "_" + mixedCaseSnakeCaseToPascalCase(el.name()), Enum);
+            return plain("E" + serviceName + "_" + el.name(), Enum);
         }
         else
         {
