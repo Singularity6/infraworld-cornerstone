@@ -61,9 +61,9 @@ import static com.vizor.unreal.tree.CppRecord.Residence.Header;
 import static com.vizor.unreal.tree.CppType.Kind.Enum;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
-import static com.vizor.unreal.util.Misc.mixedCharacterStringToCppSafe;
+import static com.vizor.unreal.util.Misc.unsafeNameToSnakeCase;
 import static com.vizor.unreal.util.Misc.reorder;
-import static com.vizor.unreal.util.Misc.snakeCaseToCamelCase;
+import static com.vizor.unreal.util.Misc.mixedCaseSnakeCaseToPascalCase;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
 import static com.vizor.unreal.util.Tuple.of;
 import static java.lang.String.join;
@@ -85,7 +85,7 @@ class ProtoProcessorArgs
         this.pathToConverted = requireNonNull(pathToConverted2);
         this.moduleName = requireNonNull(moduleName);
 
-        this.wrapperName = mixedCharacterStringToCppSafe(removeExtension(pathToProto.toFile().getName()));
+        this.wrapperName = mixedCaseSnakeCaseToPascalCase(unsafeNameToSnakeCase(removeExtension(pathToProto.toFile().getName())));
 
         this.className = wrapperName;
 
@@ -467,12 +467,12 @@ class ProtoProcessor implements Runnable
     {
         if (el instanceof MessageElement)
         {
-            return plain("F" + serviceName + "_" + mixedCharacterStringToCppSafe(el.name()), Struct);
+            return plain("F" + serviceName + "_" + mixedCaseSnakeCaseToPascalCase(el.name()), Struct);
         }
             
         else if (el instanceof EnumElement)
         {
-            return plain("E" + serviceName + "_" + mixedCharacterStringToCppSafe(el.name()), Enum);
+            return plain("E" + serviceName + "_" + mixedCaseSnakeCaseToPascalCase(el.name()), Enum);
         }
         else
         {

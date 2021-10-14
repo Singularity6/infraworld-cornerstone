@@ -247,54 +247,13 @@ public class Misc
     }
 
     /**
-     * Converts a string like "com.org.core.service-name" to ComOrgCoreServiceName.
-     * Preserves case, except to upper case first letter to a word, where words are separated by underscores.
-     *
-     * In the future we can consider reworking the code to transform ssomething like "com.org.core.service-name to "ComOrgCore_ServiceName".
+     * Converts an "unsafe" name string like "com.org.core.service-name" to "ComOrgCoreServiceName". Unsafe in this case means a string that can't be compiled to a generated code field name, or what have you.
      * 
-     * @return Input "com.org.core.service-name" to "ComOrgCoreServiceName"
+     * @return Input "com.org.core.service-name" to "com_org_core_service_name"
      */
-    public static String mixedCharacterStringToCppSafe(final String mixedCharacterString)
+    public static String unsafeNameToSnakeCase(final String unsafeName)
     {
-        // Transforms input "com.org.core.service-name" to "com_org_core_service_name"
-        final String cppSafeString = mixedCharacterString.replaceAll("[.-]", "_");
-        
-        // Below here, transforms input "com_org_core_service_name" to "ComOrgCoreServiceName"
-
-        // snakeCaseToCamelCase but modified to leave existing case alone.
-        // Some strings that come in here are mostly preformated, leave the case alone.
-        final StringBuilder sb = new StringBuilder(cppSafeString.length());
-
-        // Split our snake case string by snake separator, simultaneously excluding empty strings
-        // This is faster than more sophisticated regex.
-        final String[] split = stream(cppSafeString.split("_"))
-                .filter(i -> i.length() != 0)
-                .toArray(String[]::new);
-
-        if (split.length == 0)
-        {
-            return cppSafeString;
-        }
-
-        for (int i = 0; i < split.length; i++)
-        {
-            String s = split[i];
-            final int wordLength = s.length();
-
-            if (wordLength > 0)
-            {
-                // The first letter may be either lower or upper case, depending of 'firstLetterIsCapital' flag
-                final char firstLetter = toUpperCase(s.charAt(0));
-                sb.append(firstLetter);
-
-                if (wordLength > 1)
-                {
-                    sb.append(s.substring(1));
-                }
-            }
-        }
-
-        return sb.toString();
+        return unsafeName.replaceAll("[.-]", "_");
     }
 
     /**
@@ -316,6 +275,41 @@ public class Misc
     public static String snakeCaseToCamelCase(final String snakeCaseString)
     {
         return snakeCaseToCamelCase(snakeCaseString, true);
+    }
+
+    /**
+     * Transforms snake_case to PascalString.
+     * @param pascalCaseString String in mixed case snake_case
+     *
+     * @return Input 'org_core_pascal_case' string transformed to 'OrgCorePascalCase'.
+     */
+    public static String mixedCaseSnakeCaseToPascalCase(final String pascalCaseString)
+    {
+        final StringBuilder sb = new StringBuilder(pascalCaseString.length());
+
+        // Split our snake case string by snake separator, simultaneously excluding empty strings
+        // This is faster than more sophisticated regex.
+        final String[] split = stream(pascalCaseString.split("_"))
+                .filter(i -> i.length() != 0)
+                .toArray(String[]::new);
+
+        for (int i = 0; i < split.length; i++)
+        {
+            String s = split[i];
+            final int wordLength = s.length();
+
+            if (wordLength > 0)
+            {
+                final char firstLetter = toUpperCase(s.charAt(0));
+
+                sb.append(firstLetter);
+
+                if (wordLength > 1)
+                    sb.append(s.substring(1));
+            }
+        }
+
+        return sb.toString();
     }
 
     /**
