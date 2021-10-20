@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal.util;
 
 import org.apache.logging.log4j.Level;
@@ -247,8 +252,8 @@ public class Misc
     }
 
     /**
-     * Converts an "unsafe" name string like "com.org.core.service-name" to "ComOrgCoreServiceName". Unsafe in this case means a string that can't be compiled to a generated code field name, or what have you. 
-     * 
+     * Converts an "unsafe" field name to a string that can be compiled in a C-like language. 
+     * Not yet all inclusive, doesn't strip all unsafe characters, just commonly usesd ones in file names where the file name is used in a generated name.
      * 
      * @return Input "com.org.core.service-name" to "com_org_core_service_name". Preserves case, not strict snake case; ComOrg.ServiceName to ComOrg_ServiceName.
      */

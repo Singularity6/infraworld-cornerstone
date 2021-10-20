@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal.convert;
 
 import com.squareup.wire.schema.internal.parser.ProtoFileElement;
