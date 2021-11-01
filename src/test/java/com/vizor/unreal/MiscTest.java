@@ -29,7 +29,7 @@ import java.util.Random;
 
 import static com.vizor.unreal.util.Misc.TAB;
 
-import static com.vizor.unreal.util.Misc.mixedCaseSnakeCaseToPascalCase;
+import static com.vizor.unreal.util.Misc.mixedCaseToPascalCase;
 import static com.vizor.unreal.util.Misc.packageNameToCppNamespace;
 import static com.vizor.unreal.util.Misc.removeWhitespaces;
 import static com.vizor.unreal.util.Misc.reorder;
@@ -136,15 +136,15 @@ public class MiscTest
     }
 
     @Test
-    public void testMixedCaseSnakeCaseToPascalCase()
+    public void testmixedCaseToPascalCase()
     {
-        assertEquals(mixedCaseSnakeCaseToPascalCase("com_org_project"), "ComOrgProject");
-        assertEquals(mixedCaseSnakeCaseToPascalCase("Com_Org_Project"), "ComOrgProject");
-        assertEquals(mixedCaseSnakeCaseToPascalCase("ComOrgProject_ServiceName"), "ComOrgProjectServiceName");
+        assertEquals(mixedCaseToPascalCase("com_org_project"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("Com_Org_Project"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("ComOrgProject_ServiceName"), "ComOrgProjectServiceName");
 
-        assertEquals(mixedCaseSnakeCaseToPascalCase("__com__org__project"), "ComOrgProject");
-        assertEquals(mixedCaseSnakeCaseToPascalCase("com__org__project__"), "ComOrgProject");
-        assertEquals(mixedCaseSnakeCaseToPascalCase("_com__org__project_"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("__com__org__project"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("com__org__project__"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("_com__org__project_"), "ComOrgProject");
     }
 
     @Test

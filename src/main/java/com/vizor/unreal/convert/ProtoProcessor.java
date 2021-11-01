@@ -68,7 +68,7 @@ import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
 import static com.vizor.unreal.util.Misc.unsafeNameToSnakeCase;
 import static com.vizor.unreal.util.Misc.reorder;
-import static com.vizor.unreal.util.Misc.mixedCaseSnakeCaseToPascalCase;
+import static com.vizor.unreal.util.Misc.mixedCaseToPascalCase;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
 import static com.vizor.unreal.util.Tuple.of;
 import static java.lang.String.join;
@@ -90,7 +90,7 @@ class ProtoProcessorArgs
         this.pathToConverted = requireNonNull(pathToConverted2);
         this.moduleName = requireNonNull(moduleName);
 
-        this.wrapperName = mixedCaseSnakeCaseToPascalCase(unsafeNameToSnakeCase(removeExtension(pathToProto.toFile().getName())));
+        this.wrapperName = mixedCaseToPascalCase(unsafeNameToSnakeCase(removeExtension(pathToProto.toFile().getName())));
 
         this.className = wrapperName;
 

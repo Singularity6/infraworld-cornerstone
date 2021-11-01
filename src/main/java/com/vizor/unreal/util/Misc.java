@@ -273,18 +273,19 @@ public class Misc
     }
 
     /**
-     * Transforms snake_case to PascalString.
-     * @param pascalCaseString String in mixed case snake_case
+     * Transforms mixedCase_String to PascalString.
+     * Only transforms starting letter to upper case and maintains mixed case in the rest of the word. If you pass this function a PascalString, it should return that same PascalString.
+     * @param mixedCaseString String in mixedCase or snake_string.
      *
-     * @return Input 'org_core_pascal_case' string transformed to 'OrgCorePascalCase'.
+     * @return Input 'orgCore_pascalCase' string transformed to 'OrgCorePascalCase'.
      */
-    public static String mixedCaseSnakeCaseToPascalCase(final String pascalCaseString)
+    public static String mixedCaseToPascalCase(final String mixedCaseString)
     {
-        final StringBuilder sb = new StringBuilder(pascalCaseString.length());
+        final StringBuilder sb = new StringBuilder(mixedCaseString.length());
 
         // Split our snake case string by snake separator, simultaneously excluding empty strings
         // This is faster than more sophisticated regex.
-        final String[] split = stream(pascalCaseString.split("_"))
+        final String[] split = stream(mixedCaseString.split("_"))
                 .filter(i -> i.length() != 0)
                 .toArray(String[]::new);
 
