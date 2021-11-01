@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal.util;
 
 import org.apache.logging.log4j.Level;
@@ -244,6 +249,63 @@ public class Misc
         {
             throw new RuntimeException("Input list must be mutable in order to perform rearrange");
         }
+    }
+
+    /**
+     * Converts an "unsafe" field name to a string that can be compiled in a C-like language. 
+     * Not yet all inclusive, doesn't strip all unsafe characters, just commonly usesd ones in file names where the file name is used in a generated name.
+     * 
+     * @return Input "com.org.core.service-name" to "com_org_core_service_name". Preserves case, not strict snake case; ComOrg.ServiceName to ComOrg_ServiceName.
+     */
+    public static String unsafeNameToSnakeCase(final String unsafeName)
+    {
+        return unsafeName.replaceAll("[.-]", "_");
+    }
+
+    /**
+     * Takes a Java package name and turns it into a C++ safe namespace.
+     *
+     * @return Input "com.org.project.servicename" string transformed to "com::org::project::servicename"
+     */
+    public static String packageNameToCppNamespace(final String packageName)
+    {
+        return packageName.replace(".", "::");
+    }
+
+    /**
+     * Transforms mixedCase_String to PascalString.
+     * Only transforms starting letter to upper case and maintains mixed case in the rest of the word. If you pass this function a PascalString, it should return that same PascalString.
+     * @param mixedCaseString String in mixedCase or snake_string.
+     *
+     * @return Input 'orgCore_pascalCase' string transformed to 'OrgCorePascalCase'.
+     */
+    public static String mixedCaseToPascalCase(final String mixedCaseString)
+    {
+        final StringBuilder sb = new StringBuilder(mixedCaseString.length());
+
+        // Split our snake case string by snake separator, simultaneously excluding empty strings
+        // This is faster than more sophisticated regex.
+        final String[] split = stream(mixedCaseString.split("_"))
+                .filter(i -> i.length() != 0)
+                .toArray(String[]::new);
+
+        for (int i = 0; i < split.length; i++)
+        {
+            String s = split[i];
+            final int wordLength = s.length();
+
+            if (wordLength > 0)
+            {
+                final char firstLetter = toUpperCase(s.charAt(0));
+
+                sb.append(firstLetter);
+
+                if (wordLength > 1)
+                    sb.append(s.substring(1));
+            }
+        }
+
+        return sb.toString();
     }
 
     /**

@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal.convert;
 
 import com.squareup.wire.schema.internal.parser.EnumConstantElement;
@@ -61,8 +66,9 @@ import static com.vizor.unreal.tree.CppRecord.Residence.Header;
 import static com.vizor.unreal.tree.CppType.Kind.Enum;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
+import static com.vizor.unreal.util.Misc.unsafeNameToSnakeCase;
 import static com.vizor.unreal.util.Misc.reorder;
-import static com.vizor.unreal.util.Misc.snakeCaseToCamelCase;
+import static com.vizor.unreal.util.Misc.mixedCaseToPascalCase;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
 import static com.vizor.unreal.util.Tuple.of;
 import static java.lang.String.join;
@@ -84,9 +90,9 @@ class ProtoProcessorArgs
         this.pathToConverted = requireNonNull(pathToConverted2);
         this.moduleName = requireNonNull(moduleName);
 
-        this.wrapperName = removeExtension(pathToProto.toFile().getName());
+        this.wrapperName = mixedCaseToPascalCase(unsafeNameToSnakeCase(removeExtension(pathToProto.toFile().getName())));
 
-        this.className = snakeCaseToCamelCase(wrapperName);
+        this.className = wrapperName;
 
 //        if (parse.packageName() == null)
 //            throw new RuntimeException("package filed in proto file is required for cornerstone");
@@ -270,7 +276,7 @@ class ProtoProcessor implements Runnable
 
         // TODO: Fix paths
         final String generatedIncludeName = join("/", config.getWrappersPath(),
-                removeExtension(pathToProtoStr)).replace("\\", pathSeparator);//, args.wrapperName);
+                pathToProtoStr).replace("\\", pathSeparator);//, args.wrapperName);
 
         final String generatedHeaderPath = getHeaderPath(args);
                 
@@ -465,11 +471,18 @@ class ProtoProcessor implements Runnable
     private CppType ueNamedType(final String serviceName, final TypeElement el)
     {
         if (el instanceof MessageElement)
+        {
             return plain("F" + serviceName + "_" + el.name(), Struct);
+        }
+            
         else if (el instanceof EnumElement)
+        {
             return plain("E" + serviceName + "_" + el.name(), Enum);
+        }
         else
+        {
             throw new RuntimeException("Unknown type: '" + el.getClass().getName() + "'");
+        }
     }
 
 

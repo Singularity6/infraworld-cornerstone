@@ -13,9 +13,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal.tree;
 
 import com.vizor.unreal.writer.CppPrinter;
+import static com.vizor.unreal.util.Misc.packageNameToCppNamespace;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +37,7 @@ public final class CppNamespace extends CppRecord
 
     public CppNamespace(final String name)
     {
-        this.name = name;
+        this.name = packageNameToCppNamespace(name);
     }
 
     public void add(final CppRecord... residents)

@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal;
 
 import com.vizor.unreal.util.Misc;
@@ -23,12 +28,16 @@ import java.util.List;
 import java.util.Random;
 
 import static com.vizor.unreal.util.Misc.TAB;
+
+import static com.vizor.unreal.util.Misc.mixedCaseToPascalCase;
+import static com.vizor.unreal.util.Misc.packageNameToCppNamespace;
 import static com.vizor.unreal.util.Misc.removeWhitespaces;
 import static com.vizor.unreal.util.Misc.reorder;
 import static com.vizor.unreal.util.Misc.snakeCaseToCamelCase;
 import static com.vizor.unreal.util.Misc.spaceSeparatedToCamelCase;
 import static com.vizor.unreal.util.Misc.splitGeneric;
 import static com.vizor.unreal.util.Misc.stringIsNullOrEmpty;
+import static com.vizor.unreal.util.Misc.unsafeNameToSnakeCase;
 import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.shuffle;
@@ -100,6 +109,42 @@ public class MiscTest
         reorder(integers, new int[]{0, 1, 2, 2, 1, 0});
 
         assertEquals(integers, asList(10, 20, 30, 30, 20, 10));
+    }
+
+    @Test
+    public void testPackageNameToCppNamespace()
+    {
+        assertEquals(packageNameToCppNamespace("com.org.project"), "com::org::project");
+        assertEquals(packageNameToCppNamespace("Com.Org.Project"), "Com::Org::Project");
+
+        assertEquals(packageNameToCppNamespace("com.org.project.service_name"), "com::org::project::service_name");
+        assertEquals(packageNameToCppNamespace("Com.Org.Project.Service_Name"), "Com::Org::Project::Service_Name");
+
+        assertEquals(packageNameToCppNamespace("Com.Org.Project.Service__Name"), "Com::Org::Project::Service__Name");
+    }
+
+    @Test
+    public void testUnsafeNameToSnakeCase()
+    {
+        assertEquals(unsafeNameToSnakeCase("com.org.project"), "com_org_project");
+        assertEquals(unsafeNameToSnakeCase("Com.Org.Project"), "Com_Org_Project");
+
+        assertEquals(unsafeNameToSnakeCase("ComOrgProject.ServiceName"), "ComOrgProject_ServiceName");
+        assertEquals(unsafeNameToSnakeCase("ComOrgProject.Service-Name"), "ComOrgProject_Service_Name");
+
+        assertEquals(unsafeNameToSnakeCase("ComOrgProject.Service-Name_ActionName"), "ComOrgProject_Service_Name_ActionName");
+    }
+
+    @Test
+    public void testmixedCaseToPascalCase()
+    {
+        assertEquals(mixedCaseToPascalCase("com_org_project"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("Com_Org_Project"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("ComOrgProject_ServiceName"), "ComOrgProjectServiceName");
+
+        assertEquals(mixedCaseToPascalCase("__com__org__project"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("com__org__project__"), "ComOrgProject");
+        assertEquals(mixedCaseToPascalCase("_com__org__project_"), "ComOrgProject");
     }
 
     @Test

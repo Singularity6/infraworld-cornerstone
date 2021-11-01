@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+
 package com.vizor.unreal.convert;
 
 import com.squareup.wire.schema.internal.parser.ProtoFileElement;
@@ -42,6 +47,7 @@ import static com.vizor.unreal.tree.CppType.Kind.Class;
 import static com.vizor.unreal.tree.CppType.Kind.Struct;
 import static com.vizor.unreal.tree.CppType.plain;
 import static com.vizor.unreal.tree.CppType.wildcardGeneric;
+import static com.vizor.unreal.util.Misc.packageNameToCppNamespace;
 import static java.lang.String.join;
 import static java.lang.System.lineSeparator;
 import static java.text.MessageFormat.format;
@@ -252,7 +258,7 @@ class ClientWorkerGenerator
 
     private String getPackageNamespaceString()
     {
-        return parse.packageName() != null ? parse.packageName() + "::" : "";
+        return parse.packageName() != null ? packageNameToCppNamespace(parse.packageName()) + "::" : "";
     }
 
 }
