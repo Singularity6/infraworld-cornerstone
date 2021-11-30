@@ -24,14 +24,10 @@ import com.squareup.wire.schema.internal.parser.ProtoFileElement;
 import com.squareup.wire.schema.internal.parser.RpcElement;
 import com.squareup.wire.schema.internal.parser.ServiceElement;
 import com.vizor.unreal.provider.TypesProvider;
-import com.vizor.unreal.tree.CppArgument;
-import com.vizor.unreal.tree.CppClass;
-import com.vizor.unreal.tree.CppField;
-import com.vizor.unreal.tree.CppFunction;
-import com.vizor.unreal.tree.CppNamespace;
-import com.vizor.unreal.tree.CppType;
+import com.vizor.unreal.tree.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.vizor.unreal.convert.ClientGenerator.conduitName;
@@ -126,7 +122,7 @@ class ClientWorkerGenerator
 
         final CppType parentType = genericParentType.makeGeneric(stubType);
 
-        final CppClass clientClass = new CppClass(classType, parentType, fields, methods);
+        final CppClass clientClass = new CppClass(classType, parentType, Collections.<CppDelegate>emptyList(), fields, methods);
 
         clientClass.setResidence(Cpp);
         clientClass.enableAnnotations(false);
@@ -177,8 +173,9 @@ class ClientWorkerGenerator
             "    {1} WrappedRequest;",
             "    {0}->Dequeue(WrappedRequest);",
             "",
-            "    const {2}& WrappedResponse = ",
+            "    {2} WrappedResponse = ",
             "        {3}(WrappedRequest.Request, WrappedRequest.Context);",
+            "    WrappedResponse.SetCallbacks(WrappedRequest.SuccessCallback, WrappedRequest.FailureCallback);",
             "    {0}->Enqueue(WrappedResponse);",
             "'}'"
         ));
@@ -192,8 +189,8 @@ class ClientWorkerGenerator
             final List<CppType> genericParams = field.getType().getGenericParams();
 
             sb.append(format(dequeuePattern, field.getName(),
-                genericParams.get(0),
-                genericParams.get(1),
+                reqWithCtx.makeGeneric(genericParams.get(0), genericParams.get(1)),
+                rspWithSts.makeGeneric(genericParams.get(1)),
                 rpc.name()
             )).append(lineSeparator()).append(lineSeparator());
         }
@@ -223,8 +220,8 @@ class ClientWorkerGenerator
             .map(rpc -> {
                 // Extract conduits (bidirectional queues)
                 final CppType compiledGenericConduit = conduitType.makeGeneric(
-                    reqWithCtx.makeGeneric(provider.get(rpc.requestType())),
-                    rspWithSts.makeGeneric(provider.get(rpc.responseType()))
+                    provider.get(rpc.requestType()),
+                    provider.get(rpc.responseType())
                 );
 
                 final CppField conduit = new CppField(compiledGenericConduit.makePtr(), rpc.name() + conduitName);

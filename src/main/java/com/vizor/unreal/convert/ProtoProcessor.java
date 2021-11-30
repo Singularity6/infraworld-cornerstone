@@ -231,7 +231,7 @@ class ProtoProcessor implements Runnable
             final ClientGenerator cg = new ClientGenerator(service, ueProvider, worker.getType());
 
             clients.add(cg.genClientClass());
-            dispatchers.addAll(cg.getDelegates());
+            dispatchers.addAll(cg.getGlobalDelegates());
         }
 
         final String pathToProtoStr = removeExtension(args.pathToProto.toString());

@@ -324,9 +324,17 @@ public class CppPrinter implements AutoCloseable
             code().newLine().header();
         current = previous;
 
-        writeInlineComment("Methods");
-        clazz.getMethods().forEach(m -> m.accept(this));
+        if (!clazz.getDelegateTypes().isEmpty()) {
+            writeInlineComment("Delegate Types");
+            clazz.getDelegateTypes().forEach(nt -> {nt.accept(this); newLine();});
 
+            newLine();
+        }
+
+        if (!clazz.getMethods().isEmpty()) {
+            writeInlineComment("Methods");
+            clazz.getMethods().forEach(m -> m.accept(this));
+        }
         switchWriterByResidence(clazz);
 
         removeLine();
@@ -469,7 +477,7 @@ public class CppPrinter implements AutoCloseable
 
     public void visit(final CppDelegate delegate)
     {
-        write("DECLARE_DYNAMIC_MULTICAST_DELEGATE");
+        write(delegate.getDelegateMacroStringBase());
 
         final String tense = delegate.getTense();
         if (!tense.isEmpty())
@@ -490,8 +498,16 @@ public class CppPrinter implements AutoCloseable
 
             argType.accept(this);
 
-            write(", ");
-            write(a.getName());
+            if (delegate.isDynamicDelegate()) {
+                write(", ");
+                write(a.getName());
+            }
+            else
+            {
+                write(" /*");
+                write(a.getName());
+                write("*/");
+            }
         }
         write(");");
     }
