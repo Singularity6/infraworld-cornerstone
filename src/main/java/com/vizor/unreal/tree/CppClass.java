@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+ 
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+ 
 package com.vizor.unreal.tree;
 
 import com.vizor.unreal.writer.CppPrinter;
@@ -25,13 +30,15 @@ import static java.util.Collections.unmodifiableList;
 public class CppClass extends CppStruct
 {
     private final CppType superType;
+    private final List<CppDelegate> delegateTypes;
     private final List<CppFunction> methods;
 
-    public CppClass(final CppType type, final CppType superType, final List<CppField> fields, final List<CppFunction> methods)
+    public CppClass(final CppType type, final CppType superType, final List<CppDelegate> delegateTypes, final List<CppField> fields, final List<CppFunction> methods)
     {
         super(type, fields);
 
         this.superType = superType;
+        this.delegateTypes = delegateTypes;
         this.methods = unmodifiableList(methods);
 
         // Set each method's declaring class to this.
@@ -41,6 +48,8 @@ public class CppClass extends CppStruct
         // Assuming methods and
         setResidence(Split);
     }
+
+    public final List<CppDelegate> getDelegateTypes() { return delegateTypes; }
 
     public final List<CppFunction> getMethods()
     {

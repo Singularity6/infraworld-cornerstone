@@ -27,10 +27,12 @@ import com.vizor.unreal.tree.CppFunction;
 import com.vizor.unreal.tree.CppType;
 import com.vizor.unreal.util.Tuple;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static com.vizor.unreal.tree.CppAnnotation.BlueprintAssignable;
 import static com.vizor.unreal.tree.CppAnnotation.BlueprintCallable;
@@ -43,6 +45,7 @@ import static java.lang.String.join;
 import static java.lang.System.lineSeparator;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
+import static java.util.List.of;
 import static java.util.stream.Collectors.toList;
 
 class ClientGenerator
@@ -64,7 +67,7 @@ class ClientGenerator
     static final String initFunctionName = "HierarchicalInit";
 
     // Special structures, wrapping requests and responses:
-    static final CppType reqWithCtx = wildcardGeneric("TRequestWithContext", Struct, 1);
+    static final CppType reqWithCtx = wildcardGeneric("TRequestWithContext", Struct, 2);
     static final CppType rspWithSts = wildcardGeneric("TResponseWithStatus", Struct, 1);
     static final CppType conduitType = wildcardGeneric("TConduit", Struct, 2);
     static final CppArgument contextArg = new CppArgument(plain("FGrpcClientContext", Struct).makeRef(), "Context");
@@ -79,7 +82,7 @@ class ClientGenerator
     private final Map<String, Tuple<CppType, CppType>> requestsResponses;
 
     private final List<CppField> conduits;
-    private final List<Tuple<CppDelegate, CppField>> delegates;
+    private final List<Tuple<CppDelegate, CppField>> globalDelegates;
 
     ClientGenerator(final ServiceElement service, final TypesProvider provider, final CppType clientType)
     {
@@ -102,7 +105,7 @@ class ClientGenerator
         ));
 
         conduits = genConduits();
-        delegates = genDelegates();
+        globalDelegates = genGlobalDelegates();
     }
 
     CppClass genClientClass()
@@ -110,17 +113,26 @@ class ClientGenerator
         final List<CppFunction> methods = new ArrayList<>();
         methods.add(genInitialize());
         methods.add(genUpdate());
-        methods.addAll(genProcedures());
+
+        final List<Tuple<Tuple<CppDelegate, CppDelegate>, CppFunction>> proceduresWithDelegates = genProcedures();
+        methods.addAll(proceduresWithDelegates.stream().map(Tuple::second).collect(toList()));
 
         final List<CppField> fields = new ArrayList<>(genConduits());
-        fields.addAll(delegates.stream().map(Tuple::second).collect(toList()));
+        fields.addAll(globalDelegates.stream().map(Tuple::second).collect(toList()));
 
-        return new CppClass(dispatcherType, parentType, fields, methods);
+        final List<CppDelegate> delegateTypes = proceduresWithDelegates.stream().flatMap(tuple -> {
+                final Tuple<CppDelegate, CppDelegate> delegates = tuple.first();
+                final CppDelegate successDelegate = delegates.first();
+                final CppDelegate failureDelegate = delegates.second();
+                return asList(successDelegate, failureDelegate).stream();
+                }).collect(toList());
+
+        return new CppClass(dispatcherType, parentType, delegateTypes, fields, methods);
     }
 
-    final List<CppDelegate> getDelegates()
+    final List<CppDelegate> getGlobalDelegates()
     {
-        return delegates.stream().map(Tuple::first).collect(toList());
+        return globalDelegates.stream().map(Tuple::first).collect(toList());
     }
 
     static String supressSuperString(final String functionName)
@@ -133,8 +145,8 @@ class ClientGenerator
         return requestsResponses.entrySet().stream()
             .map(e -> {
                 final CppType compiled = e.getValue().reduce((req, rsp) -> conduitType.makeGeneric(
-                    reqWithCtx.makeGeneric(req),
-                    rspWithSts.makeGeneric(rsp))
+                    req,
+                    rsp)
                 );
                 final CppField f = new CppField(compiled, e.getKey() + conduitName);
                 f.enableAnnotations(false);
@@ -144,7 +156,7 @@ class ClientGenerator
             .collect(toList());
     }
 
-    private List<Tuple<CppDelegate, CppField>> genDelegates()
+    private List<Tuple<CppDelegate, CppField>> genGlobalDelegates()
     {
         // two named arguments
         final CppArgument dispatcherArg = new CppArgument(dispatcherType.makePtr(), dispatcherPrefix);
@@ -156,19 +168,26 @@ class ClientGenerator
                 final CppType eventType = plain(eventTypePrefix + e.getKey() + service.name(), Struct);
 
                 return Tuple.of(
-                    new CppDelegate(eventType, asList(dispatcherArg, responseArg, statusArg)),
+                    new CppDelegate(false, true, eventType, asList(dispatcherArg, responseArg, statusArg)),
                     new CppField(eventType, eventPrefix + e.getKey())
                 );
             })
             .peek(t -> {
-                // should add an UE-specific annotations to these events
-                t.second().addAnnotation(BlueprintAssignable);
-                t.second().addAnnotation(Category, rpcResponsesCategory + service.name());
+                if (t.first().isDynamicDelegate()) {
+                    // should add an UE-specific annotations to these events
+                    t.second().enableAnnotations(true);
+                    t.second().addAnnotation(BlueprintAssignable);
+                    t.second().addAnnotation(Category, rpcResponsesCategory + service.name());
+                }
+                else
+                {
+                    t.second().enableAnnotations(false);
+                }
             })
             .collect(toList());
     }
 
-    private CppFunction genInitialize()
+     private CppFunction genInitialize()
     {
         final StringBuilder sb = new StringBuilder(supressSuperString(initFunctionName));
         final String cName = clientType.getName();
@@ -206,25 +225,33 @@ class ClientGenerator
             "'{'",
             "    {1} ResponseWithStatus;",
             "    while ({0}.Dequeue(ResponseWithStatus))",
+            "    '{'",
+            "        const bool bWasSuccessful = ResponseWithStatus.Status.ErrorCode == EGrpcStatusCode::Ok;",
+            "        if (bWasSuccessful && ResponseWithStatus.SuccessCallback != nullptr)",
+            "            ResponseWithStatus.SuccessCallback(ResponseWithStatus.Response);",
+            "        else if (!bWasSuccessful && ResponseWithStatus.FailureCallback != nullptr)",
+            "            ResponseWithStatus.FailureCallback(ResponseWithStatus.Status);",
+            "        ",
             "        {2}.Broadcast(",
             "            this,",
             "            ResponseWithStatus.Response,",
             "            ResponseWithStatus.Status",
             "        );",
+            "    '}'",
             "'}'"
         ));
 
         final StringBuilder sb = new StringBuilder(supressSuperString(updateFunctionName));
         for (int i = 0; i < conduits.size(); i++)
         {
-            final Tuple<CppDelegate, CppField> delegate = delegates.get(i);
+            final Tuple<CppDelegate, CppField> delegate = globalDelegates.get(i);
             final CppField conduit = conduits.get(i);
 
             final String dequeue = delegate.reduce((d, f) -> {
                 final List<CppType> genericParams = conduit.getType().getGenericParams();
-                final CppType requestWithContext = genericParams.get(1);
+                final CppType responseWithStatus = rspWithSts.makeGeneric(genericParams.get(1));
 
-                return format(dequeuePattern, conduit.getName(), requestWithContext.toString(), f.getName());
+                return format(dequeuePattern, conduit.getName(), responseWithStatus.toString(), f.getName());
             });
 
             sb.append(dequeue).append(lineSeparator()).append(lineSeparator());
@@ -238,28 +265,52 @@ class ClientGenerator
         return update;
     }
 
-    private List<CppFunction> genProcedures()
+    private List<Tuple<Tuple<CppDelegate, CppDelegate>, CppFunction>> genProcedures()
     {
         final String pattern = join(lineSeparator(), asList(
             "if (!CanSendRequests())",
             "    return false;",
             "",
-            "{0}Conduit.Enqueue(TRequestWithContext$New(Request, Context));",
+            "const TFunction<void(const {1}&)> SuccessCallback = [WeakThis = TWeakObjectPtr<ThisClass>'{'this'}', OnSucceed](const {1}& Response) '{'",
+            "    OnSucceed.ExecuteIfBound(WeakThis.Get(), Response);",
+            "    '}';",
+            "const TFunction<void(const FGrpcStatus&)> FailureCallback = [WeakThis = TWeakObjectPtr<ThisClass>'{'this'}', OnFail](const FGrpcStatus& Status) '{'",
+            "    OnFail.ExecuteIfBound(WeakThis.Get(), Status);",
+            "    '}';",
+            "{0}Conduit.Enqueue(MakeRequestWithContext(Request, Context, SuccessCallback, FailureCallback));",
             "return true;"
         ));
 
         final CppArgument contextArg = new CppArgument(plain("FGrpcClientContext", Struct).makeRef(), "Context");
+        final CppArgument dispatcherArg = new CppArgument(dispatcherType.makePtr(), dispatcherPrefix);
+        final CppArgument statusArg = new CppArgument(plain("FGrpcStatus", Struct), "Status");
 
         return requestsResponses.entrySet().stream()
             .map(e -> {
+                final CppType responseType = e.getValue().second();
+                final CppArgument responseArg = new CppArgument(responseType.makeRef(), "Response");
+
+                final CppType successEventType = plain("F" + "On" + e.getKey() + "_Success", Struct);
+                final CppDelegate successDelegate = new CppDelegate(false, false, successEventType, asList(dispatcherArg, responseArg));
+                final CppArgument successDelegateArg = new CppArgument(successEventType.makeRef(true, false), "OnSucceed");
+
+                final CppType failureEventType = plain("F" + "On" + e.getKey() + "_Failure", Struct);
+                final CppDelegate failureDelegate = new CppDelegate(false, false, failureEventType, asList(dispatcherArg, statusArg));
+                final CppArgument failureDelegateArg = new CppArgument(failureEventType.makeRef(true,false), "OnFail");
+
                 final CppArgument requestArg = e.getValue().reduce((r, $) -> new CppArgument(r, "Request"));
-                final CppFunction method = new CppFunction(e.getKey(), boolType, asList(requestArg, contextArg));
+                final CppFunction method = new CppFunction(e.getKey(), boolType, asList(requestArg, contextArg, successDelegateArg, failureDelegateArg));
 
-                method.setBody(format(pattern, e.getKey()));
-                method.addAnnotation(BlueprintCallable);
-                method.addAnnotation(Category, rpcRequestsCategory + service.name());
+                final String responseTypeName = responseType.toString();
+                method.setBody(format(pattern, e.getKey(), responseTypeName));
 
-                return method;
+                // Disabling BP-exposure. - Saul.Abreu
+                //method.enableAnnotations(true);
+                //method.addAnnotation(BlueprintCallable);
+                //method.addAnnotation(Category, rpcRequestsCategory + service.name());
+                method.enableAnnotations(false);
+
+                return Tuple.of(Tuple.of(successDelegate, failureDelegate), method);
             })
             .collect(toList());
     }

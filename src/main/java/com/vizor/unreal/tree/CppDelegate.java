@@ -13,6 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+ 
+/*
+ * Modified 2021 by Singularity 6, Inc.
+ */
+ 
 package com.vizor.unreal.tree;
 
 import com.vizor.unreal.writer.CppPrinter;
@@ -23,13 +28,43 @@ import static java.util.Collections.unmodifiableList;
 
 public final class CppDelegate implements CtLeaf
 {
+    private final boolean isDynamicDelegate;
+    private final boolean isMulticastDelegate;
     private final CppType type;
     private final List<CppArgument> arguments;
 
-    public CppDelegate(final CppType type, final List<CppArgument> arguments)
+    public CppDelegate(final boolean isDynamicDelegate, final boolean isMulticastDelegate, final CppType type, final List<CppArgument> arguments)
     {
+        this.isDynamicDelegate = isDynamicDelegate;
+        this.isMulticastDelegate = isMulticastDelegate;
         this.type = type;
         this.arguments = unmodifiableList(arguments);
+    }
+
+    public final String getDelegateMacroStringBase()
+    {
+        if (isDynamicDelegate)
+        {
+            if (isMulticastDelegate)
+            {
+                return "DECLARE_DYNAMIC_MULTICAST_DELEGATE";
+            }
+            else
+            {
+                return "DECLARE_DYNAMIC_DELEGATE";
+            }
+        }
+        else
+        {
+            if (isMulticastDelegate)
+            {
+                return "DECLARE_MULTICAST_DELEGATE";
+            }
+            else
+            {
+                return "DECLARE_DELEGATE";
+            }
+        }
     }
 
     public String getTense()
@@ -66,5 +101,13 @@ public final class CppDelegate implements CtLeaf
     {
         printer.visit(this);
         return printer;
+    }
+
+    public final boolean isDynamicDelegate() {
+        return isDynamicDelegate;
+    }
+
+    public final boolean isMulticastDelegate() {
+        return isMulticastDelegate;
     }
 }
